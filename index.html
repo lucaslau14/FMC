@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Medical Record Form</title>
+  <style>
+    @page { size: A4 portrait; margin: 6mm; }
+    @media print {
+      body { width: 100%; height: 100%; margin: 0; padding: 0; }
+      .no-print { display: none; }
+      input, textarea, select { border: 1px solid #999 !important; }
+      select { -webkit-appearance: none; -moz-appearance: none; appearance: none; background: transparent; }
+    }
+    
+    * { box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; font-size: 11px; }
+    body { margin: 0; padding: 10px; background-color: #f9f9f9; }
+    .page-container { max-width: 850px; margin: 0 auto; background: #fff; padding: 10px; border: 1px solid #ccc; }
+    
+    .top-bar { display: flex; align-items: center; margin-bottom: 6px; font-weight: bold; font-size: 12px; }
+    .top-bar input { font-size: 12px; padding: 2px 4px; margin-left: 6px; }
+    
+    table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+    th, td { border: 1px solid #000; padding: 3px 4px; vertical-align: middle; }
+    th { text-align: left; font-size: 10px; background-color: #f2f2f2; }
+    
+    .input-flex { display: flex; align-items: center; gap: 4px; }
+    input[type="text"], input[type="number"], textarea { border: 1px solid #ccc; border-radius: 2px; padding: 2px 4px; font-size: 11px; outline: none; }
+    input[type="number"] { width: 50px; }
+    input[type="text"] { width: 100%; }
+    
+    textarea { resize: none; height: 26px; width: 100%; border: none; background: transparent; }
+    select { padding: 1px 2px; font-size: 11px; border: 1px solid #ccc; border-radius: 2px; }
+    
+    .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+    
+    .section-title { font-weight: bold; font-size: 11px; padding: 2px 4px; margin-bottom: 3px; display: inline-block; width: 100%; }
+    .bg-hypertension { background-color: #fef08a; }
+    .bg-ihd { background-color: #fbcfe8; }
+    .bg-lipid { background-color: #fed7aa; }
+    .bg-other { background-color: #e9d5ff; }
+    .bg-dm { background-color: #fef08a; }
+    .bg-unsettled { background-color: #bfdbfe; }
+    
+    .col-status { width: 42px; text-align: center; }
+    .col-label { width: 32%; font-weight: 500; }
+    
+    .unsettled-box { height: 165px; border: 1px solid #000; padding: 4px; }
+    .unsettled-box textarea { height: 100%; border: none; }
+
+    .action-btn { background: #2563eb; color: #fff; border: none; padding: 6px 12px; font-size: 12px; border-radius: 4px; cursor: pointer; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+<div class="page-container">
+  <button class="action-btn no-print" onclick="window.print()">Print / Save as PDF</button>
+
+  <form>
+    <div class="top-bar">
+      <span>Date:</span>
+      <input type="date" style="border: 1px solid #ccc;">
+    </div>
+
+    <!-- Header Section -->
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 12%;">TICKET</th>
+          <th style="width: 38%;">LABS</th>
+          <th style="width: 8%;">FU</th>
+          <th style="width: 17%;">Bloods</th>
+          <th style="width: 25%;">MED CHANGES</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input type="text"></td>
+          <td><textarea></textarea></td>
+          <td><input type="text"></td>
+          <td><textarea></textarea></td>
+          <td><textarea></textarea></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="grid-layout">
+      <!-- HYPERTENSION -->
+      <div>
+        <div class="section-title bg-hypertension">HYPERTENSION</div>
+        <table>
+          <tr>
+            <td class="col-label">Norvasc</td>
+            <td><div class="input-flex"><input type="number"><span>mg daily</span></div></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Zestril</td>
+            <td><div class="input-flex"><input type="number"><span>mg daily</span></div></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Losartan</td>
+            <td><div class="input-flex"><input type="number"><span>mg daily</span></div></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Atenolol</td>
+            <td>
+              <div class="input-flex">
+                <input type="number"><span>mg</span>
+                <select><option>daily</option><option>BD</option></select>
+              </div>
+            </td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Others:</td>
+            <td><input type="text"></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- IHD / CVA -->
+      <div>
+        <div class="section-title bg-ihd">IHD / CVA</div>
+        <table>
+          <tr>
+            <td class="col-label">Aspirin</td>
+            <td><div class="input-flex"><input type="number"><span>mg daily</span></div></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Plavix</td>
+            <td><div class="input-flex"><input type="number"><span>mg daily</span></div></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Pepcidine</td>
+            <td>
+              <div class="input-flex">
+                <input type="number"><span>mg</span>
+                <select><option>daily</option><option>BD</option></select>
+              </div>
+            </td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Pantoloc</td>
+            <td><div class="input-flex"><input type="number"><span>mg daily</span></div></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Others:</td>
+            <td><input type="text"></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- HYPERLIPIDEMIA -->
+      <div>
+        <div class="section-title bg-lipid">HYPERLIPIDEMIA</div>
+        <table>
+          <tr>
+            <td class="col-label">Zocor</td>
+            <td><div class="input-flex"><input type="number"><span>mg nocte</span></div></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Lipitor</td>
+            <td><div class="input-flex"><input type="number"><span>mg daily</span></div></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Crestor</td>
+            <td><div class="input-flex"><input type="number"><span>mg daily</span></div></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Ezetrol</td>
+            <td><div class="input-flex"><input type="number"><span>mg daily</span></div></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Others:</td>
+            <td><input type="text"></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- OTHER ISSUES -->
+      <div>
+        <div class="section-title bg-other">OTHER ISSUES</div>
+        <table>
+          <tr>
+            <td class="col-label">Gout</td>
+            <td><input type="text"></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">LUTS</td>
+            <td style="padding: 2px 4px;">
+              <div class="input-flex" style="margin-bottom: 2px;">
+                <span>Hytrin:</span> <input type="number"> <span>mg nocte</span>
+              </div>
+              <div class="input-flex">
+                <span>Harnal ocas:</span> <input type="number"> <span>mg daily</span>
+              </div>
+            </td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">COPD</td>
+            <td><input type="text"></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Hypothyroid</td>
+            <td>
+              <div class="input-flex">
+                <span>Thyroxine:</span> <input type="number"> <span>mcg</span>
+              </div>
+            </td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Others:</td>
+            <td><input type="text"></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- DM -->
+      <div>
+        <div class="section-title bg-dm">DM</div>
+        <table>
+          <tr>
+            <td class="col-label">Metformin</td>
+            <td><div class="input-flex"><input type="number"><span>mg BD</span></div></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Amaryl</td>
+            <td><div class="input-flex"><input type="number"><span>mg OM</span></div></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Diamicron</td>
+            <td>
+              <div class="input-flex">
+                <input type="number"><span>mg</span>
+                <select><option>OM</option><option>BD</option></select>
+              </div>
+            </td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Actos</td>
+            <td><div class="input-flex"><input type="number"><span>mg daily</span></div></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">SGLT2-i</td>
+            <td><div class="input-flex"><input type="number"><span>mg daily</span></div></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+          <tr>
+            <td class="col-label">Others:</td>
+            <td><input type="text"></td>
+            <td class="col-status"><select><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- UNSETTLED ISSUES -->
+      <div>
+        <div class="section-title bg-unsettled">UNSETTLED ISSUES FROM LV / UPDATE TO NOTES:</div>
+        <div class="unsettled-box">
+          <textarea></textarea>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+</body>
+</html>
