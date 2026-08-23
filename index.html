@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Medical Record Form</title>
+  <!-- Library to capture form inputs and render as PNG image -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    @page { size: A4 portrait; margin: 4mm; }
+    
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; font-size: 13px; }
+    html, body { margin: 0; padding: 0; background-color: #f4f4f9; }
+    
+    .page-container { 
+      max-width: 900px; 
+      margin: 0 auto; 
+      background: #fff; 
+      padding: 10px; 
+      border: 1px solid #ccc; 
+      min-height: 100vh;
+      display: flex; 
+      flex-direction: column; 
+      justify-content: space-between; 
+    }
+    
+    .top-bar { display: flex; align-items: center; margin-bottom: 8px; font-weight: bold; font-size: 14px; gap: 8px; flex-wrap: wrap; }
+    .top-bar input, .top-bar select { font-size: 14px; padding: 4px 6px; }
+    
+    table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+    th, td { border: 1px solid #000; padding: 4px 6px; vertical-align: middle; }
+    th { text-align: left; font-size: 12px; background-color: #f2f2f2; }
+    
+    .input-flex { display: flex; align-items: center; gap: 4px; font-size: 13px; }
+    input[type="text"], input[type="number"], textarea { border: 1px solid #ccc; border-radius: 3px; padding: 4px; font-size: 13px; outline: none; width: 100%; }
+    input[type="number"] { width: 55px; }
+    
+    textarea { resize: vertical; width: 100%; border: none; background: transparent; font-size: 12px; }
+    select { padding: 3px 4px; font-size: 13px; border: 1px solid #ccc; border-radius: 3px; }
+    
+    .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+    
+    .section-title { font-weight: bold; font-size: 12px; padding: 3px 6px; margin-bottom: 4px; display: inline-block; width: 100%; }
+    .bg-hypertension { background-color: #fef08a; }
+    .bg-ihd { background-color: #fbcfe8; }
+    .bg-lipid { background-color: #fed7aa; }
+    .bg-other { background-color: #e9d5ff; }
+    .bg-dm { background-color: #fef08a; }
+    .bg-unsettled { background-color: #bfdbfe; }
+    
+    .col-status { width: 42px; text-align: center; }
+    .col-label { width: 32%; font-weight: 600; font-size: 13px; }
+    
+    .unsettled-box { height: 110px; border: 1px solid #000; padding: 4px; }
+    .unsettled-box textarea { height: 100%; border: none; font-size: 13px; }
+
+    .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+    .summary-box { border: 1px solid #000; padding: 6px; background-color: #fdfdfd; height: 110px; }
+    .summary-box textarea { height: 100%; font-size: 12.5px; line-height: 1.3; }
+    
+    .plan-table { height: 110px; }
+    .plan-table td { padding: 4px; }
+    .plan-table textarea { height: 35px; border: 1px solid #ccc; font-size: 12.5px; }
+
+    .btn-container { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    .action-btn { background: #2563eb; color: #fff; border: none; padding: 6px 12px; font-size: 13px; border-radius: 4px; cursor: pointer; }
+    .action-btn-green { background: #16a34a; color: #fff; border: none; padding: 6px 12px; font-size: 13px; border-radius: 4px; cursor: pointer; }
+    .action-btn-gray { background: #4b5563; color: #fff; border: none; padding: 6px 12px; font-size: 13px; border-radius: 4px; cursor: pointer; }
+
+    /* iPhone / Mobile Screen Specific Adjustments */
+    @media screen and (max-width: 768px) {
+      body { padding: 0; background-color: #fff; overflow-y: auto; }
+      .page-container { border: none; padding: 8px; height: auto; min-height: 100vh; }
+      
+      /* Scale inputs to 16px to stop iOS Safari auto-zooming when tapping inputs */
+      input[type="text"], input[type="number"], select, textarea { font-size: 16px !important; }
+      
+      .grid-layout, .bottom-grid { grid-template-columns: 1fr; gap: 10px; }
+      .unsettled-box { height: 100px; }
+      .summary-box { height: 120px; }
+      .plan-table { height: auto; }
+      
+      .btn-container button { flex: 1; padding: 10px; font-size: 14px; text-align: center; }
+    }
+
+    /* Preserve Print & PDF Output */
+    @media print {
+      body { width: 100%; height: 100%; margin: 0; padding: 0; background: #fff; }
+      .no-print { display: none !important; }
+      .page-container { height: 100vh; border: none; padding: 0; }
+      .grid-layout, .bottom-grid { grid-template-columns: 1fr 1fr !important; }
+      input, textarea, select { border: 1px solid #999 !important; font-size: 11px !important; }
+      select { -webkit-appearance: none; -moz-appearance: none; appearance: none; background: transparent; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-container" id="form-to-capture">
+  <div>
+    <div class="btn-container no-print">
+      <button type="button" class="action-btn-gray" onclick="saveProgress()">Save Progress</button>
+      <button type="button" class="action-btn" onclick="window.print()">Print / PDF</button>
+      <button type="button" class="action-btn-green" onclick="downloadImage()">Save Image</button>
+    </div>
+
+    <form id="medForm">
+      <div class="top-bar">
+        <span>Date:</span>
+        <input type="date" id="formDate" style="border: 1px solid #ccc;">
+        <select id="ampmSelect">
+          <option value="AM">AM</option>
+          <option value="PM">PM</option>
+        </select>
+      </div>
+
+      <!-- Top Header Row -->
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 18%;">TICKET</th>
+            <th style="width: 42%;">LABS</th>
+            <th style="width: 40%;">LAST VISIT MED CHANGES</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="text" id="ticketInput"></td>
+            <td><textarea id="labsInput" style="height: 42px;"></textarea></td>
+            <td><textarea id="autoMedChanges" style="height: 42px;" readonly placeholder="Auto-generated..."></textarea></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="grid-layout">
+        <!-- HYPERTENSION -->
+        <div>
+          <div class="section-title bg-hypertension">HYPERTENSION</div>
+          <table data-category="Hypertension">
+            <tr data-drug="Norvasc" data-unit="mg daily">
+              <td class="col-label">Norvasc</td>
+              <td><div class="input-flex"><input type="number" class="dose-input"><span>mg daily</span></div></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-drug="Zestril" data-unit="mg daily">
+              <td class="col-label">Zestril</td>
+              <td><div class="input-flex"><input type="number" class="dose-input"><span>mg daily</span></div></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-drug="Losartan" data-unit="mg daily">
+              <td class="col-label">Losartan</td>
+              <td><div class="input-flex"><input type="number" class="dose-input"><span>mg daily</span></div></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-drug="Atenolol" data-unit="mg" data-has-freq="true">
+              <td class="col-label">Atenolol</td>
+              <td>
+                <div class="input-flex">
+                  <input type="number" class="dose-input"><span>mg</span>
+                  <select class="freq-select"><option>daily</option><option>BD</option></select>
+                </div>
+              </td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-type="other">
+              <td class="col-label">Others:</td>
+              <td><input type="text" class="other-input"></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- IHD / CVA -->
+        <div>
+          <div class="section-title bg-ihd">IHD / CVA</div>
+          <table data-category="IHD / CVA">
+            <tr data-drug="Aspirin" data-unit="mg daily">
+              <td class="col-label">Aspirin</td>
+              <td><div class="input-flex"><input type="number" class="dose-input"><span>mg daily</span></div></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-drug="Plavix" data-unit="mg daily">
+              <td class="col-label">Plavix</td>
+              <td><div class="input-flex"><input type="number" class="dose-input"><span>mg daily</span></div></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-drug="Pepcidine" data-unit="mg" data-has-freq="true">
+              <td class="col-label">Pepcidine</td>
+              <td>
+                <div class="input-flex">
+                  <input type="number" class="dose-input"><span>mg</span>
+                  <select class="freq-select"><option>BD</option><option>daily</option></select>
+                </div>
+              </td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-drug="Pantoloc" data-unit="mg daily">
+              <td class="col-label">Pantoloc</td>
+              <td><div class="input-flex"><input type="number" class="dose-input"><span>mg daily</span></div></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-type="other">
+              <td class="col-label">Others:</td>
+              <td><input type="text" class="other-input"></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- HYPERLIPIDEMIA -->
+        <div>
+          <div class="section-title bg-lipid">HYPERLIPIDEMIA</div>
+          <table data-category="Hyperlipidemia">
+            <tr data-drug="Zocor" data-unit="mg nocte">
+              <td class="col-label">Zocor</td>
+              <td><div class="input-flex"><input type="number" class="dose-input"><span>mg nocte</span></div></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-drug="Lipitor" data-unit="mg daily">
+              <td class="col-label">Lipitor</td>
+              <td><div class="input-flex"><input type="number" class="dose-input"><span>mg daily</span></div></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-drug="Crestor" data-unit="mg daily">
+              <td class="col-label">Crestor</td>
+              <td><div class="input-flex"><input type="number" class="dose-input"><span>mg daily</span></div></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-drug="Ezetrol" data-unit="mg daily">
+              <td class="col-label">Ezetrol</td>
+              <td><div class="input-flex"><input type="number" class="dose-input"><span>mg daily</span></div></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-type="other">
+              <td class="col-label">Others:</td>
+              <td><input type="text" class="other-input"></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- OTHER ISSUES -->
+        <div>
+          <div class="section-title bg-other">OTHER ISSUES</div>
+          <table data-category="Other Issues">
+            <tr data-drug="Gout" data-custom="true">
+              <td class="col-label">Gout</td>
+              <td><input type="text" class="other-input"></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-drug="LUTS" data-custom="true">
+              <td class="col-label">LUTS</td>
+              <td style="padding: 2px 4px;">
+                <div class="input-flex" style="margin-bottom: 2px;">
+                  <span>Hytrin:</span> <input type="number" id="luts1"> <span>mg nocte</span>
+                </div>
+                <div class="input-flex">
+                  <span>Harnal:</span> <input type="number" id="luts2"> <span>mg daily</span>
+                </div>
+              </td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-drug="COPD" data-custom="true">
+              <td class="col-label">COPD</td>
+              <td><input type="text" class="other-input"></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-drug="Hypothyroid" data-custom="true">
+              <td class="col-label">Hypothyroid</td>
+              <td>
+                <div class="input-flex">
+                  <span>Thyroxine:</span> <input type="number" id="hypoDose"> <span>mcg</span>
+                </div>
+              </td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-type="other-direct">
+              <td class="col-label">Others:</td>
+              <td><input type="text" class="other-input" id="otherIssuesDirect"></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- DM -->
+        <div>
+          <div class="section-title bg-dm">DM</div>
+          <table data-category="DM">
+            <tr data-drug="Metformin" data-unit="mg BD">
+              <td class="col-label">Metformin</td>
+              <td><div class="input-flex"><input type="number" class="dose-input"><span>mg BD</span></div></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-drug="Amaryl" data-unit="mg OM">
+              <td class="col-label">Amaryl</td>
+              <td><div class="input-flex"><input type="number" class="dose-input"><span>mg OM</span></div></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-drug="Diamicron" data-unit="mg" data-has-freq="true">
+              <td class="col-label">Diamicron</td>
+              <td>
+                <div class="input-flex">
+                  <input type="number" class="dose-input"><span>mg</span>
+                  <select class="freq-select"><option>OM</option><option>BD</option></select>
+                </div>
+              </td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-drug="Actos" data-unit="mg daily">
+              <td class="col-label">Actos</td>
+              <td><div class="input-flex"><input type="number" class="dose-input"><span>mg daily</span></div></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-drug="SGLT2-i" data-unit="mg daily">
+              <td class="col-label">SGLT2-i</td>
+              <td><div class="input-flex"><input type="number" class="dose-input"><span>mg daily</span></div></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+            <tr data-type="other">
+              <td class="col-label">Others:</td>
+              <td><input type="text" class="other-input"></td>
+              <td class="col-status"><select class="status-select"><option value=""></option><option>+</option><option>↑</option><option>↓</option><option>x</option></select></td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- UNSETTLED ISSUES -->
+        <div>
+          <div class="section-title bg-unsettled">UNSETTLED ISSUES FROM LV / UPDATE TO NOTES:</div>
+          <div class="unsettled-box">
+            <textarea id="unsettledNotes"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Summary Blocks -->
+      <div class="bottom-grid">
+        <div class="summary-box">
+          <textarea id="autoActiveSummary" readonly placeholder="Auto-summarizing active problems and medications..."></textarea>
+        </div>
+
+        <table class="plan-table">
+          <tr>
+            <td style="width: 28%; font-weight: bold;">FU</td>
+            <td><div class="input-flex"><input type="text" id="fuInput" style="width: 65px;"> <span>/52</span></div></td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold;">Investigations</td>
+            <td><textarea id="investigationsInput" placeholder="Enter investigations..."></textarea></td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold;">Med changes</td>
+            <td><textarea id="medChangesInput" placeholder="Enter medication changes..."></textarea></td>
+          </tr>
+        </table>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.getElementById('medForm').addEventListener('input', updateSummaries);
+  document.getElementById('medForm').addEventListener('change', updateSummaries);
+
+  function updateSummaries() {
+    let medChanges = [];
+    let problemSummary = {};
+    let otherIssuesSummaries = [];
+
+    document.querySelectorAll('.grid-layout table').forEach(table => {
+      let category = table.getAttribute('data-category');
+      let activeMeds = [];
+
+      table.querySelectorAll('tr').forEach(row => {
+        let statusSelect = row.querySelector('.status-select');
+        let status = statusSelect ? statusSelect.value : '';
+        let drug = row.getAttribute('data-drug');
+        let unit = row.getAttribute('data-unit') || '';
+        let doseInput = row.querySelector('.dose-input');
+        let dose = doseInput ? doseInput.value.trim() : '';
+        let freqSelect = row.querySelector('.freq-select');
+        let freq = freqSelect ? freqSelect.value : '';
+
+        if (category !== 'Other Issues') {
+          let fullDrugStr = '';
+          if (drug && dose) {
+            if (row.getAttribute('data-has-freq')) {
+              fullDrugStr = `${drug} ${dose}mg ${freq}`;
+            } else if (unit) {
+              fullDrugStr = `${drug} ${dose}${unit}`;
+            }
+          } else if (row.getAttribute('data-type') === 'other') {
+            let otherVal = row.querySelector('.other-input').value.trim();
+            if (otherVal) fullDrugStr = otherVal;
+          }
+
+          if (status && fullDrugStr) {
+            if (status === '+') medChanges.push(`Add ${fullDrugStr}`);
+            else if (status === '↑') medChanges.push(`Step up ${fullDrugStr}`);
+            else if (status === '↓') medChanges.push(`Step down ${fullDrugStr}`);
+            else if (status === 'x') medChanges.push(`Off ${fullDrugStr}`);
+          }
+
+          if (fullDrugStr && status !== 'x') {
+            activeMeds.push(fullDrugStr);
+          }
+        } 
+        else {
+          let problemStr = '';
+          let secondColText = '';
+
+          if (drug === 'Gout' || drug === 'COPD') {
+            secondColText = row.querySelector('.other-input').value.trim();
+            if (secondColText) problemStr = `${drug} on ${secondColText}`;
+          } else if (drug === 'LUTS') {
+            let h1 = document.getElementById('luts1').value.trim();
+            let h2 = document.getElementById('luts2').value.trim();
+            let lutsParts = [];
+            if (h1) lutsParts.push(`Hytrin ${h1}mg nocte`);
+            if (h2) lutsParts.push(`Harnal ocas ${h2}mg daily`);
+            if (lutsParts.length > 0) problemStr = `LUTS on ${lutsParts.join(', ')}`;
+          } else if (drug === 'Hypothyroid') {
+            let hypo = document.getElementById('hypoDose').value.trim();
+            if (hypo) problemStr = `Hypothyroid on Thyroxine ${hypo}mcg`;
+          } else if (row.getAttribute('data-type') === 'other-direct') {
+            let directVal = row.querySelector('.other-input').value.trim();
+            if (directVal) problemStr = directVal;
+          }
+
+          if (problemStr && status !== 'x') {
+            otherIssuesSummaries.push(problemStr);
+          }
+
+          if (status && problemStr) {
+            if (status === '+') medChanges.push(`Add ${problemStr}`);
+            else if (status === '↑') medChanges.push(`Step up ${problemStr}`);
+            else if (status === '↓') medChanges.push(`Step down ${problemStr}`);
+            else if (status === 'x') medChanges.push(`Off ${problemStr}`);
+          }
+        }
+      });
+
+      if (category && category !== 'Other Issues' && activeMeds.length > 0) {
+        problemSummary[category] = activeMeds;
+      }
+    });
+
+    document.getElementById('autoMedChanges').value = medChanges.join(', ');
+
+    let summaryLines = [];
+    for (let cat in problemSummary) {
+      summaryLines.push(`${cat} on ${problemSummary[cat].join(', ')}`);
+    }
+    if (otherIssuesSummaries.length > 0) {
+      summaryLines.push(...otherIssuesSummaries);
+    }
+    document.getElementById('autoActiveSummary').value = summaryLines.join('\n');
+  }
+
+  function saveProgress() {
+    const formData = {};
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach((input, index) => {
+      if (input.id) {
+        formData[input.id] = input.value;
+      } else {
+        formData[`input_${index}`] = input.value;
+      }
+    });
+    localStorage.setItem('medFormProgress', JSON.stringify(formData));
+    alert('Form progress saved!');
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const savedData = localStorage.getItem('medFormProgress');
+    if (savedData) {
+      const formData = JSON.parse(savedData);
+      const inputs = document.querySelectorAll('input, select, textarea');
+      inputs.forEach((input, index) => {
+        const key = input.id || `input_${index}`;
+        if (formData[key] !== undefined) {
+          input.value = formData[key];
+        }
+      });
+      updateSummaries();
+    }
+  });
+
+  function downloadImage() {
+    const container = document.getElementById('form-to-capture');
+    const buttons = document.querySelector('.btn-container');
+    
+    buttons.style.display = 'none';
+
+    html2canvas(container, {
+      scale: 2,
+      useCORS: true
+    }).then(canvas => {
+      buttons.style.display = 'flex';
+
+      const link = document.createElement('a');
+      link.download = 'medical_record_form.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  }
+</script>
+
+</body>
+</html>
